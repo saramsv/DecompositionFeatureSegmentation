@@ -4,3 +4,6 @@ supervised_odgts/
 val_odgts/
 seqs_odgts/
 data/
+
+clustering/data/
+core.*
