@@ -1,0 +1,6 @@
+*__pycache__*
+.ipynb_checkpoints/
+supervised_odgts/
+val_odgts/
+seqs_odgts/
+data/
