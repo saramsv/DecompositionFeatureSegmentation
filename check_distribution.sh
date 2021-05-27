@@ -21,8 +21,8 @@ if [ "$#" -eq 2 ]; then
 fi
 
 if [ "$#" -eq 1 ]; then
-	python3 pair_generator.py
-	files="sup_train.odgt sup_val.odgt sup_test.odgt"
+	#python3 pair_generator.py
+	files="data/sup_train.odgt data/sup_val.odgt data/sup_test.odgt"
 	tags=$1
 	for f in $files
 	do

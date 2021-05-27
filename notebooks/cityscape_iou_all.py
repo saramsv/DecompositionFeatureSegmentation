@@ -53,6 +53,34 @@ def class_pair_iou(df, CLASS_LIST):
             pbar.close()
     return output
 
+# similar to class_pair_iou. But only pair images with more matched classes, so that it reduces number combinations 
+def matchClass_pair_iou(df, class_names):
+    output = ""
+    temp = df.groupby(by=class_names).size().reset_index(name='count')
+    temp = temp[temp['count'] > 1]
+
+    for idx, line in temp.iterrows():
+        temp2 = line.to_frame().transpose()
+        temp2 = temp2.set_index(list(EVAL_CLASS_MAP.values()))
+        df2 = df[df.apply(lambda row: tuple(row[class_names].values) in temp2.index, axis=1)]
+        # print(len(df2))
+        pbar = tqdm(total=sum(1 for ignore in itertools.combinations(df2['image'], 2)))
+        for pair in itertools.combinations(df2['image'], 2):
+            # pbar.set_description("{}".format(""))
+            pbar.update(1)
+            row1 = df[df['image']==pair[0]]
+            row2 = df[df['image']==pair[1]]
+            imgs = [row1['image'].values[0],row2['image'].values[0]]
+            segms = [row1['segmentation'].values[0], row2['segmentation'].values[0]]
+            w, h =  row1['width'].values[0], row1['height'].values[0]
+            iou = vis_pair(imgs[0], imgs[1], segms[0], segms[1])
+            new_line = {}
+            new_line["fpath_img"], new_line["fpath_segm"], new_line["width"], new_line["height"], new_line['iou'] = \
+                    imgs, segms, int(w), int(h), iou
+            output += json.dumps(new_line) + "\n"
+        pbar.close()
+    return output
+
 def save_odgt(file_to_save, output_path, overwrite=False):
     if os.path.exists(file_to_save) and not overwrite:
         print("File exists!")
@@ -171,7 +199,8 @@ if __name__ == '__main__':
     df = pd.read_csv(args.csv)
     
     print()
-    output = class_pair_iou(df, CLASS_LIST)
+    # output = class_pair_iou(df, CLASS_LIST)
+    output = matchClass_pair_iou(df, CLASS_LIST)
     
     print("\noutput: {}\n".format(args.save))
     save_odgt(output, args.save, args.overwrite)
